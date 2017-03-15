@@ -61,21 +61,24 @@ void save_melody(std::ostream& out, melody& notes, scaletype scale)
 	save_note(out, last_pitch, duration, scale);
 }
 
-void save_voice(std::ostream& out, voice& voice)
+void save_voice(std::ostream& out, voice& voice, scaletype scale)
 {
 	out << voice.name << "Notes = {\n";
-	save_melody(out, voice.notes, true); // TODO: prawdziwa tonacja
+	save_melody(out, voice.notes, scale);
+	out << "\\bar \"|.\"\n"
+		<< "\n}\n\n";
 }
 
 void save_voices(std::ostream& out, song& song)
 {
-	for (voice& voice : song.voices) save_voice(out, voice);
+	for (voice& voice : song.voices) save_voice(out, voice, song.scale >= 0);
 }
 
 void save_global(std::ostream& out, song& song)
 {
 	out << "global = {\n"
-		<< "  \time 4/4\n"
+		<< "\\time 4/4\n"
+		<< "\\tempo 4 = 120\n"
 		<< "}\n\n";
 }
 
@@ -90,12 +93,42 @@ void save_scores(std::ostream& out, song& song)
 
 void save_four_part(std::ostream& out, song& song)
 {
-
+	out << "\\score { <<\n"
+		<< "  \\new PianoStaff <<\n"
+		<< "    \\new Staff <<\n"
+		<< "      \\set Staff.printPartCombineTexts = ##f\n"
+		<< "      \\partcombine\n"
+		<< "      << \\global \\" << song.voices[0].name << "Notes >>\n"
+		<< "      << \\global \\" << song.voices[1].name << "Notes >>\n"
+		<< "    >>\n"
+		<< "    \\new Staff <<\n"
+		<< "      \\set Staff.printPartCombineTexts = ##f\n"
+		<< "      \\clef bass\n"
+		<< "      \\partcombine\n"
+		<< "      << \\global \\" << song.voices[2].name << "Notes >>\n"
+		<< "      << \\global \\" << song.voices[3].name << "Notes >>\n"
+		<< "    >>\n"
+		<< "  >>\n"
+		<< ">>\n"
+		<< "\\layout{}\n"
+		<< "\\midi{}\n"
+		<< "}\n\n";
 }
 
 void save_generic(std::ostream& out, song& song)
 {
-
+	out << "\\score { <<\n";
+	for (auto& voice : song.voices) {
+		out << "\\new Staff <<\n";
+		if (voice.max_note < 67) out << "\\clef bass\n";
+		out << "\\global\n"
+			<< "\\" << voice.name << "Notes\n"
+			<< ">>\n";
+	}
+	out << ">>\n"
+		<< "\\layout{}\n"
+		<< "\\midi{}\n"
+        << "}\n\n";
 }
 
 void save(std::ostream& out, song& song)

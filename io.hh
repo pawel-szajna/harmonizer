@@ -5,8 +5,6 @@ namespace io
 {
 
 typedef bool scaletype;
-#define SHARP (true)
-#define FLAT (false)
 
 void save(std::ostream& out, song& song);
 
