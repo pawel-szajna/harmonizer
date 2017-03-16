@@ -10,13 +10,15 @@
 namespace io
 {
 
-const std::vector<std::string> notenames_sharp{ "c", "cis", "d", "dis", "e", "f", "fis", "g", "gis", "a", "ais", "b" };
-const std::vector<std::string> notenames_flat{ "c", "des", "d", "es", "e", "f", "ges", "g", "as", "a", "bes", "b" };
+static const std::vector<std::string> notenames_sharp{ "c", "cis", "d", "dis", "e", "f", "fis", "g", "gis", "a", "ais", "b" };
+static const std::vector<std::string> notenames_flat{ "c", "des", "d", "es", "e", "f", "ges", "g", "as", "a", "bes", "b" };
+static const std::vector<std::string> scales_sharp{ "c", "g", "d", "a", "e", "b", "fis" };
+static const std::vector<std::string> scales_flat{ "c", "f", "bes", "es", "as", "des" };
 
 std::string name_from_note(int note, scaletype scale)
 {
 	std::ostringstream out;
-	if (note == 0) {
+	if (note <= 0 || note > 80) {
 		out << "r";
 	} else {
 		out << (scale ? notenames_sharp : notenames_flat)[note % 12];
@@ -78,6 +80,7 @@ void save_global(std::ostream& out, song& song)
 {
 	out << "global = {\n"
 		<< "\\time 4/4\n"
+		<< "\\key " << (song.scale < 0 ? scales_flat[-song.scale] : scales_sharp[song.scale]) << " \\major\n"
 		<< "\\tempo 4 = 120\n"
 		<< "}\n\n";
 }
